@@ -86,7 +86,7 @@ def parse(pdf_path):
                     if contain_zh(results):
 
                         inserted = False
-                        for item in text_dic_list:
+                        for item in text_dic_list:      #主要清洗方式，为联合在pdf分行的同一个语句，将同一页中所有宽度相同的句子联合，并用空格分隔
                             if(abs(item['hide'] - (x.y1-x.y0)) < eps):
                                 item['text']+=(results[:-1]+' ')
                                 inserted = True

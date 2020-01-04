@@ -10,7 +10,7 @@ import math
 eps = 3e-2
 # from pdf_extractor import extract_pdf_content
 
-pdf_path = r'C:\Users\12506\Downloads\中文文本纠错\2019最新精选行研报告资料包\2019年1-3月精选深度报告'
+pdf_path = r'G:\MyFiles\Courses\Chinese Essay Error Checking\2019年1-3月精选深度报告'
 pdfs = glob.glob("{}/*.pdf".format(pdf_path))
 
 import re
@@ -25,16 +25,64 @@ from pdfminer.layout import *
 from pdfminer.pdfinterp import PDFTextExtractionNotAllowed
 
 zh_pattern = re.compile(u'[\u4e00-\u9fa5]+')
+spe_pat = r"(\xe2\x98\x85|\xe2\x97\x86)"
+spe_repat = re.compile(spe_pat)
+
+
+def is_chinese(char):
+    if char >= '\u4e00' and char <= '\u9fa5':
+        return True
+    else:
+        return False
+
+def is_alphabet(char):
+    if (char >= '\u0041' and char <= '\u005a') or (char >= '\u0061' and char <= '\u007a'):
+        return True
+    else:
+        return False
+
+def is_number(char):
+    if char >= '\u0030' and char <= '\u0039':
+        return True
+    else:
+        return False
+
+def is_other(uchar):
+    if not (is_chinese(uchar) or is_number(uchar) or is_alphabet(uchar)):
+        return True
+    else:
+        return False
+
+def spe_pun_drop(seq):
+    nnseq = seq.replace('\n','')     #去除多余换行符
+    nseq = nnseq.replace(' ','')
+    ch = nseq[0]
+    if is_other(ch) and  ch not in [',','。','，','？','?',';','；','！','!','“','”','\'','\"']:
+        return '\n'+nseq[1:]
+    return nseq
+
+
 def contain_zh(seq):        #匹配中文，对没有中文的句子或短语进行跳过
+    chF = False
+    punF = False
     for ch in seq:
         if u'\u4e00' <= ch <= u'\u9fff':
-            return True
+            chF = True
+        elif ch in [',','。','，','？','?',';','；','！','!','“','”','\'','\"','（','(','）',')']:        #利用中英文分隔符判断是否为标题等脏数据
+            punF = True
+    return chF and punF
+
+def match_pattern(seq):
+    if contain_zh(seq):
+        return True
     return False
+
 
 def parse(pdf_path):
     global eps
     # 保存文本内容
     key = pdf_path.split('/')[-1]
+    print('extracting from ',key)
     f =  open(key[:-4]+'.txt', 'w', encoding='utf-8')
     fp = open(pdf_path, 'rb')  # 以二进制读模式打开
     # 用文件对象来创建一个pdf文档分析器
@@ -83,15 +131,15 @@ def parse(pdf_path):
                 if isinstance(x, LTTextBoxHorizontal):  # 获取文本内容
                     num_TextBoxHorizontal += 1  # 水平文本框对象增一
                     results = x.get_text()
-                    if contain_zh(results):
-
+                    if match_pattern(results):      #检测是否符合启发式规则
+                        nresults = spe_pun_drop(results)
                         inserted = False
                         for item in text_dic_list:      #主要清洗方式，为联合在pdf分行的同一个语句，将同一页中所有宽度相同的句子联合，并用空格分隔
-                            if(abs(item['hide'] - (x.y1-x.y0)) < eps):
-                                item['text']+=(results[:-1]+' ')
+                            if(abs(item['hide'] - (x.height)) < eps):
+                                item['text']+=(nresults)
                                 inserted = True
                         if not inserted:
-                            text_dic_list.append({'hide':(x.y1-x.y0),'text':results[:-1]+' '})
+                            text_dic_list.append({'hide':(x.y1-x.y0),'text':nresults})
             for item in text_dic_list:
                 f.write(item['text']+'\n')
 

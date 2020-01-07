@@ -129,6 +129,8 @@ def parse(pdf_path):
                 continue
             except AssertionError:
                 continue
+            except OSError:
+                continue
             f = open(key[:-4] + '.txt', 'a', encoding='utf-8')
             f.write('\n\n')
             f.close()
@@ -155,7 +157,11 @@ def parse(pdf_path):
                                     ch = j._text[w]
                                     break
                             results += temch
-                    height = x._objs[0]._objs[0].height
+                    height = x._avg_lineheight
+                    for gethei in range(len(x._objs[0]._objs)):
+                        if is_chinese(x._objs[0]._objs[gethei]._text[0]):
+                            height = x._objs[0]._objs[gethei].height
+
                     if match_pattern(results):      #检测是否符合启发式规则
                         nresults = spe_pun_drop(results)
                         inserted = False
@@ -229,13 +235,21 @@ def get_txt(filepath):
                 if newdir[-4:] != '.txt':
                     os.remove(newdir)
 
+def del_txt(filepath):
+    if os.path.isdir(filepath):
+        for s in os.listdir(filepath):
+            newdir = os.path.join(filepath, s)
+            if os.path.isdir(newdir):
+                del_txt(newdir)
+            else:
+                if newdir[-4:] == '.txt':
+                    os.remove(newdir)
 
 if __name__ == '__main__':
 
-    parse(r'C:\Users\12506\Downloads\中文文本纠错\19【备份】医药行业报告汇总【360压缩解压】\19.医疗医药行业\恒瑞医药研报\20190822-新时代证券-恒瑞医药-600276-深度报告：定位中国制药创新未来.pdf')
-
     # filefold = input('please input fold path: ')
-    filefold = r'C:\Users\12506\Desktop\中文文本纠错\19【备份】医药行业报告汇总【360压缩解压】\19.医疗医药行业'
+    filefold = r'C:\Users\12506\Downloads\中文文本纠错\19【备份】医药行业报告汇总【360压缩解压】'
+    # del_txt(filefold)
     go_through(filefold)
     # get_txt(filefold)
 

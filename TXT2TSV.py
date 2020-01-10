@@ -4,18 +4,29 @@
 #@File  : TXT2TSV.py
 
 import os
+import re
 import glob
 
 bin_stop_punc = [',','，','；',';']
 stop_punc = ['。','?','？','!','！']
 
-sent_num = 1
+num_pun_pattern1 = re.compile(r'\d,\d')     #去除数字之间的逗号
+num_pun_pattern2 = re.compile(r'\d，\d')
+num_pattern = re.compile(r'[+-]?(\d)+(\.\d+)?(%)?')
+brackets_pattern1 = re.compile(r'(\(|（).*(\)|）)')
+eng_pattern = re.compile(r'[a-zA-Z]+')
+
+selected_sent = set()
 
 def get_tot_acc_sent(filename):
     global sent_num
-    ft = open('tot_acc_sent.tsv', "a+",encoding='utf-8')
     fs = open(filename,'r',encoding='utf-8')
     for line in fs.readlines():
+        line = brackets_pattern1.sub("",line)
+        line = eng_pattern.sub("@",line)
+        line = num_pun_pattern2.sub("",line)        #去除数字之间的逗号
+        line = num_pun_pattern1.sub("",line)
+        line = num_pattern.sub("*",line)
         begin = 0
         end = 0
         while begin<len(line) and end < len(line):
@@ -24,13 +35,29 @@ def get_tot_acc_sent(filename):
                 while end < len(line):
                     if line[end] in stop_punc:
                         if(end - begin >= 10):
-                            ft.write('{}\t{}\n'.format(sent_num,line[begin:end+1].strip('\n')))
-                        sent_num += 1
+                            get_line = line[begin:end+1].strip('\n')
+                            get_line = line[begin:end + 1].strip('\t')
+                            if len(get_line) > 30:
+                                pre_index = 0
+                                index = pre_index + 10
+                                while index < len(get_line) - 10:
+                                    if get_line[index] in stop_punc+bin_stop_punc:
+                                        selected_sent.add(get_line[pre_index:index+1])
+                                        pre_index = index+1
+                                        index = pre_index+10
+                                        if len(get_line) - pre_index < 30:
+                                            break
+                                    else:
+                                        index += 1
+                                if pre_index < len(get_line):
+                                    selected_sent.add(get_line[pre_index:])
+                            else:
+                                selected_sent.add(get_line)
+                            # ft.write('{}\t{}\n'.format(sent_num,line[begin:end+1].strip('\n')))
                         begin = end +1
                     end += 1
             else: begin += 1
     fs.close()
-    ft.close()
 
 
 def go_through(filepath):
@@ -44,6 +71,19 @@ def go_through(filepath):
                     print('extracting from {}'.format(newdir))
                     get_tot_acc_sent(newdir)
 
+def write_to_file():
+    ft = open('tot_acc_sent.tsv', "a+", encoding='utf-8')
+    global selected_sent
+    for id,text in enumerate(selected_sent):
+        # text = num_pun_pattern2.sub("",text)        #去除数字之间的逗号
+        # text = num_pun_pattern1.sub("",text)
+        # text = num_pattern.sub("@NUM",text)
+        # text = brackets_pattern1.sub("",text)
+        # text = brackets_pattern2.sub("", text)
+        ft.write('{}\t{}\n'.format(id+1,text))
+    ft.close()
+
+
 if __name__ == '__main__':
 
     # filefold = input('please input fold path: ')
@@ -52,3 +92,4 @@ if __name__ == '__main__':
     f.write('id\tsentence\n')
     f.close()
     go_through(filefold)
+    write_to_file()

@@ -15,6 +15,8 @@ num_pun_pattern2 = re.compile(r'\d，\d')
 num_pattern = re.compile(r'[+-]?(\d)+(\.\d+)?(%)?')
 brackets_pattern1 = re.compile(r'(\(|（).*(\)|）)')
 eng_pattern = re.compile(r'[a-zA-Z]+')
+spec_pattern = re.compile(u'[’"#$%&\'()+-/:<=>@★、…【】《》（）？“”‘’！[\\]^_`{|}~：‛—•]+')
+
 
 selected_sent = set()
 
@@ -23,10 +25,12 @@ def get_tot_acc_sent(filename):
     fs = open(filename,'r',encoding='utf-8')
     for line in fs.readlines():
         line = brackets_pattern1.sub("",line)
-        line = eng_pattern.sub("@",line)
+        line = eng_pattern.sub("*",line)
         line = num_pun_pattern2.sub("",line)        #去除数字之间的逗号
         line = num_pun_pattern1.sub("",line)
         line = num_pattern.sub("*",line)
+        line = spec_pattern.sub(' ',line)
+        line = ' '.join(line.split(' '))            #只保留多个空格中的一个
         begin = 0
         end = 0
         while begin<len(line) and end < len(line):
@@ -37,7 +41,7 @@ def get_tot_acc_sent(filename):
                         if(end - begin >= 10):
                             get_line = line[begin:end+1].strip('\n')
                             get_line = line[begin:end + 1].strip('\t')
-                            if len(get_line) > 30:
+                            if len(get_line) > 20:
                                 pre_index = 0
                                 index = pre_index + 10
                                 while index < len(get_line) - 10:
@@ -45,13 +49,13 @@ def get_tot_acc_sent(filename):
                                         selected_sent.add(get_line[pre_index:index+1])
                                         pre_index = index+1
                                         index = pre_index+10
-                                        if len(get_line) - pre_index < 30:
+                                        if len(get_line) - pre_index < 20:
                                             break
                                     else:
                                         index += 1
                                 if pre_index < len(get_line):
                                     selected_sent.add(get_line[pre_index:])
-                            else:
+                            elif len(get_line) >= 10:
                                 selected_sent.add(get_line)
                             # ft.write('{}\t{}\n'.format(sent_num,line[begin:end+1].strip('\n')))
                         begin = end +1

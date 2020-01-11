@@ -16,7 +16,7 @@ def text_segment():
     targetf = open('segmented_text.tsv', 'a+', encoding="utf-8")
     for id,text in tqdm(zip(source['id'],source['sentence'])):
         seg_list = jieba.cut(text)
-        ans = ', '.join(seg_list)
+        ans = ' '.join(seg_list)
         targetf.write('{}\t{}\n'.format(id,ans.strip(' ')))
     targetf.close()
 

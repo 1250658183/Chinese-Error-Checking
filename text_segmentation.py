@@ -7,6 +7,8 @@ import jieba
 import pandas as pd
 from tqdm import tqdm
 
+stop = [line.strip() for line in open('哈工大停用词表.txt',encoding = "utf-8").readlines() ]
+
 def text_segment():
     source = pd.read_csv('tot_acc_sent.tsv',sep='\t',encoding = "utf-8")
     targetf = open('segmented_text.tsv','w+',encoding = "utf-8")
@@ -15,8 +17,11 @@ def text_segment():
 
     targetf = open('segmented_text.tsv', 'a+', encoding="utf-8")
     for id,text in tqdm(zip(source['id'],source['sentence'])):
+        ans = ""
         seg_list = jieba.cut(text)
-        ans = ' '.join(seg_list)
+        for seg in seg_list:
+            if seg not in stop:
+                ans += ' '+seg
         targetf.write('{}\t{}\n'.format(id,ans.strip(' ')))
     targetf.close()
 

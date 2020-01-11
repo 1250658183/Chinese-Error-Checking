@@ -15,7 +15,7 @@ num_pun_pattern2 = re.compile(r'\d，\d')
 num_pattern = re.compile(r'[+-]?(\d)+(\.\d+)?(%)?')
 brackets_pattern1 = re.compile(r'(\(|（).*(\)|）)')
 eng_pattern = re.compile(r'[a-zA-Z]+')
-spec_pattern = re.compile(u'[’"#$%&\'()+-/:<=>@★、…【】《》（）？“”‘’！[\\]^_`{|}~：‛—•]+')
+spec_pattern = re.compile(u'[’"#$%&\'()+-/:<=>@★、…【】《》（）？“”‘’！[\\]^_`{|}~：／‛—②③■® ℃◆•]+')
 
 
 selected_sent = set()
@@ -29,8 +29,8 @@ def get_tot_acc_sent(filename):
         line = num_pun_pattern2.sub("",line)        #去除数字之间的逗号
         line = num_pun_pattern1.sub("",line)
         line = num_pattern.sub("*",line)
-        line = spec_pattern.sub(' ',line)
-        line = ' '.join(line.split(' '))            #只保留多个空格中的一个
+        line = spec_pattern.sub('',line)            #特殊字符直接删掉
+        line = ''.join(line.split(' '))            #不保留空格
         begin = 0
         end = 0
         while begin<len(line) and end < len(line):

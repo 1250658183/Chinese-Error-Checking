@@ -60,7 +60,7 @@ bin/lmplz -o 3 --verbose_header --text no_id_seg_text.tsv --arpa MyModel/log.arp
 --arpa:指定输出的arpa文件
 ```
 
-![2020-01-14 17-07-41屏幕截图](/home/zhaofei/图片/2020-01-14 17-07-41屏幕截图.png)
+![test](/home/zhaofei/文档/文本纠错/Chinese-Error-Checking/test.png)
 
 #### 安装kenlm的python包
 

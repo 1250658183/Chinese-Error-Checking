@@ -45,12 +45,12 @@ cd build
 cmake ..
 make -j 4
 ```
-#### 2.1.4 训练中文语言模型
-#### 数据准备(分词的文件)
+### 2.2 训练领域特定语言模型
+#### 2.2.1 数据准备(分词的文件)
 ```bash
 no_id_seg_text.tsv
 ```
-#### 训练模型(在build目录下操作)
+#### 2.2.2 训练模型(在build目录下操作)
 ```bash
 bin/lmplz -o 3 --verbose_header --text no_id_seg_text.tsv --arpa MyModel/log.arpa
 
@@ -62,17 +62,18 @@ bin/lmplz -o 3 --verbose_header --text no_id_seg_text.tsv --arpa MyModel/log.arp
 
 ![test](test.png)
 
-#### 安装kenlm的python包
+### 2.3 使用训练的模型纠错
+#### 2.3.1 安装kenlm的python包
 
 ```bash
 pip3 install https://github.com/kpu/kenlm/archive/master.zip
 ```
-#### 将arpa文件转换为binary文件(在build目录下操作)
+#### 2.3.2 将arpa文件转换为binary文件(在build目录下操作)
 ```bash
 bin/build_binary -s MyModel/log.arpa MyModel/log.bin
 ```
 
-#### 使用训练的模型预测句子的概率
+#### 2.3.3 使用训练的模型预测句子的概率
 ```bash
 #encoding:utf8
 import kenlm

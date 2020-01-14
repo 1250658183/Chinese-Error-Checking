@@ -37,7 +37,7 @@ sudo ./b2 install --with=all
 sudo apt install libbz2-dev
 sudo apt install liblzma-dev
 ```
-#### 2.1.3 安装kenlm
+#### 2.1.3 编译并安装kenlm
 ```bash
 cd kenlm
 mkdir -p build
@@ -45,7 +45,7 @@ cd build
 cmake ..
 make -j 4
 ```
-#### 2.1.4 训练语言模型
+#### 2.1.4 训练中文语言模型
 #### 数据准备(分词的文件)
 ```bash
 no_id_seg_text.tsv

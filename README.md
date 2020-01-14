@@ -59,7 +59,11 @@ bin/lmplz -o 3 --verbose_header --text no_id_seg_text.tsv --arpa MyModel/log.arp
 --text text_file:指定存放预料的txt文件
 --arpa:指定输出的arpa文件
 ```
+
+![2020-01-14 17-07-41屏幕截图](/home/zhaofei/图片/2020-01-14 17-07-41屏幕截图.png)
+
 #### 安装kenlm的python包
+
 ```bash
 pip3 install https://github.com/kpu/kenlm/archive/master.zip
 ```

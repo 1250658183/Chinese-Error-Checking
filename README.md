@@ -1,15 +1,15 @@
-## Chinese-Error-Checking
+# Chinese-Error-Checking
 
 This is my first attempt in the direction of nlp，it is dedicated to complete a Chinese error detection!
 
-### 01.08面谈任务简述：
+## 01.08面谈任务简述：
 
 &emsp;&emsp;在pdf抽取text时，由于**pdfminer库**会将原pdf中的每一行text创建一个单独的元素，此时需要面临的一个问题就是判断判断两个子句是否是属于同一个sentence。利用启发式规则，如：两行的height相同；两行的x0相同等均会产生不可预测的错误，因此设计一个自动判断两个子句是否属于一个sentence的**二分类分类器** 就显得十分主重要。<br><br>
 &emsp;&emsp;同样，在抽取pdf中的text时，有些存在于表格中表头等**不是完整句子**的元素,其可能是存在**特定领域特定表征**的有用信息，可以探索是否可以设置二分类器，其能够判别抽取的数据是有用信息或者是无用表项等。
 
 ------
 
-### 1. Data Process
+## 1. Data Process
 
 | 文件               | 含义                                                         |
 | :----------------- | :----------------------------------------------------------- |
@@ -20,7 +20,66 @@ This is my first attempt in the direction of nlp，it is dedicated to complete a
 
 ------
 
-### 2. Language Model
+## 2. Language Model
 
-#### 2.1 kenlm统计语言模型使用
+### 2.1 kenlm统计语言模型使用(已完成测试)
+#### 2.1.1 下载
+```bash
+https://github.com/kpu/kenlm
+```
+#### 2.1.2 安装Boost(kenlm需要的依赖)
+```bash
+下载boost_1_67_0.tar.bz2(https://www.boost.org/users/history/version_1_67_0.html)
+tar --bzip2 -xf boost_1_67_0.tar.bz2
+cd boost_1_67/
+./bootstrap.sh --prefix=/usr/local
+sudo ./b2 install --with=all
+sudo apt install libbz2-dev
+sudo apt install liblzma-dev
+```
+#### 2.1.3 编译并安装kenlm
+```bash
+cd kenlm
+mkdir -p build
+cd build
+cmake ..
+make -j 4
+```
+### 2.2 训练领域特定语言模型
+#### 2.2.1 数据准备(分词的文件)
+```bash
+no_id_seg_text.tsv
+```
+#### 2.2.2 训练模型(在build目录下操作)
+```bash
+bin/lmplz -o 3 --verbose_header --text no_id_seg_text.tsv --arpa MyModel/log.arpa
+
+-o n:最高采用n-gram语法
+-verbose_header:在生成的文件头位置加上统计信息
+--text text_file:指定存放预料的txt文件
+--arpa:指定输出的arpa文件
+```
+
+![test](test.png)
+
+### 2.3 使用训练的模型纠错
+#### 2.3.1 安装kenlm的python包
+
+```bash
+pip3 install https://github.com/kpu/kenlm/archive/master.zip
+```
+#### 2.3.2 将arpa文件转换为binary文件(在build目录下操作)
+```bash
+bin/build_binary -s MyModel/log.arpa MyModel/log.bin
+```
+
+#### 2.3.3 使用训练的模型预测句子的概率
+```bash
+#encoding:utf8
+import kenlm
+model = kenlm.Model('MyModel/log.bin')
+print(model.score('我 是 中国人 .',bos = True,eos = True))
+```
+
+
 

@@ -249,7 +249,7 @@ if __name__ == '__main__':
 
     # filefold = input('please input fold path: ')
     filefold = r'C:\Users\12506\Downloads\中文文本纠错\19【备份】医药行业报告汇总【360压缩解压】'
-    # del_txt(filefold)
+    del_txt(filefold)
     go_through(filefold)
     # get_txt(filefold)
 

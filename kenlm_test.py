@@ -7,7 +7,9 @@ import pandas as pd
 #漏字例句： 患者大脑中感知痛觉的神经网络会被异常激活 患者大脑中感知痛觉的神经络会被异常激活
 #错字例句： 延禧攻略电视剧剧情介绍  延禧工略电视剧剧情介绍
 #错词例句： 地方各级人民政府设置医疗机构  地方各级人民政府设置医疗机会
-f = open('originlog.txt','w')
+# logname = 'with_add_func.txt'
+logname = 'with_add_func.txt'
+f = open(logname,'w')
 f.close()
 class Logger(object):
     def __init__(self, filename='default.log', stream=sys.stdout):
@@ -21,9 +23,21 @@ class Logger(object):
     def flush(self):
         pass
 
-sys.stdout = Logger('originlog.txt', sys.stdout)
-sys.stderr = Logger('originlog.txt', sys.stderr)		# redirect std err, if necessary
+sys.stdout = Logger(logname, sys.stdout)
+sys.stderr = Logger(logname, sys.stderr)		# redirect std err, if necessary
+custom_dict_path = r'E:\Anaconda3\Lib\site-packages\pycorrector\data\custom_word_freq.txt'
 
+custom_dict = open(custom_dict_path, 'r', encoding='utf-8')
+for line in custom_dict:
+    if line[0] == '#':
+        continue
+    if len(line.strip().split()) == 2:
+        word, freq = line.strip().split()[0], line.strip().split()[1]
+        jieba.add_word(word, freq)
+    elif len(line.strip().split()) == 1:
+        jieba.add_word(line.strip())
+my_stop_word_file = r'G:\MyFiles\Courses\Chinese Essay Error Checking\data\哈工大停用词表保留特殊符号版.txt'
+my_stop = [line.strip() for line in open(my_stop_word_file,encoding = "utf-8").readlines() ]
 
 cor_sents = ['地方各级人民政府设置医疗机构',
             '延禧攻略电视剧剧情介绍',
@@ -53,14 +67,21 @@ err_sents = ['地方各级人民政府设置医疗机会',
              '在如此庞大的基因阻中',
              ]
 
-model = kenlm.Model('MyModel/log_v2.bin')
+model = kenlm.Model('MyModel/log_v3.bin')
 # print('cor:',model.perplexity(' '.join(jieba.cut(cor_sent)), bos=True, eos=True))
 
 #修改了 corrector.py 148 ;    212 min(maybe_right_items ;    227 ma ybe_errors = self.detect(sentence)
 import pycorrector
-# fixed_pycorrector.correct('主品种白蛋白提升速度为全行业第一')
+cor = '国家卫生健康委员会副主任王贺胜医政医管局局长张宗久接绍加强三级公立医院绩效考核工作有关情况。'
+err = '例乳在中亚的乌兹别克斯坦哈萨克斯坦还有非洲的埃塞俄比亚和纳米比亚的投资。'
+print(' '.join(jieba.cut(cor)))
+print('cor:', model.perplexity(' '.join([word for word in list(jieba.cut(cor)) if word not in my_stop])))
+print('err:', model.perplexity(' '.join([word for word in list(jieba.cut(err)) if word not in my_stop])))
+test = pycorrector.correct(err)
+print('err:', model.perplexity(' '.join([word for word in list(jieba.cut(test[0])) if word not in my_stop])))
+print(test)
 sent_chart = {}
-with open('cor_err_sents_chart.txt','r',encoding='utf-8') as f:
+with open('data\cor_err_sents_chart.txt','r',encoding='utf-8') as f:
     for line in f:
         if line[:4] == 'type':
             now_type = line[5:]
@@ -73,10 +94,10 @@ for error_type in sent_chart.keys():
         fixed_num[error_type] = [0,0]
         print('\nerr type:',error_type,'\n')
         for (cor_sent,err_sent) in sent_chart[error_type]:
-            print('cor:', model.perplexity(' '.join(jieba.cut(cor_sent))))
-            print('err:', model.perplexity(' '.join(jieba.cut(err_sent))))
+            print('cor:', model.perplexity(' '.join([word for word in jieba.cut(cor_sent) if word not in my_stop])))
+            print('err:', model.perplexity(' '.join([word for word in jieba.cut(err_sent) if word not in my_stop])))
             corrected_sent, detail = pycorrector.correct(err_sent)
-            print('fixed:', model.perplexity(' '.join(jieba.cut(corrected_sent))))
+            print('fixed:', model.perplexity(' '.join([word for word in jieba.cut(corrected_sent) if word not in my_stop])))
             print('cor_sent:',cor_sent)
             print('err_sent:', err_sent)
             print('fix_sent:', corrected_sent)

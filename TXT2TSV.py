@@ -41,7 +41,7 @@ def get_tot_acc_sent(filename):
                         if(end - begin >= 10):
                             get_line = line[begin:end+1].strip('\n')
                             get_line = line[begin:end + 1].strip('\t')
-                            if len(get_line) > 20:
+                            if len(get_line) > 20:              #将以句号结尾的>20的句子按照逗号分隔
                                 pre_index = 0
                                 index = pre_index + 10
                                 while index < len(get_line) - 10:

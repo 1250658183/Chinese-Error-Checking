@@ -15,6 +15,19 @@ from tqdm import tqdm
 import pandas as pd
 sentences = []
 data_path = r'E:\Anaconda3\Lib\site-packages\pycorrector\data'
+custom_dict_path = r'E:\Anaconda3\Lib\site-packages\pycorrector\data\custom_word_freq.txt'
+
+custom_dict = open(custom_dict_path, 'r', encoding='utf-8')
+for line in custom_dict:
+    if line[0] == '#':
+        continue
+    if len(line.strip().split()) == 2:
+        word, freq = line.strip().split()[0], line.strip().split()[1]
+        jieba.add_word(word, freq)
+    elif len(line.strip().split()) == 1:
+        jieba.add_word(line.strip())
+
+random.seed(1)
 
 def get_same_pinyin(filepath):          #获取同音字
     pinyin = []
@@ -143,7 +156,7 @@ def genarate_word_error(sents):
             if error_word != select_word:
                 break
 
-        word_index = select_word.find(select_word)          #替换词语中的单字
+        word_index = sent.find(select_word)          #替换词语中的单字
         err_sent = sent[:word_index]+error_word
         if word_index + len(select_word) < len(sent):
             err_sent += sent[word_index + len(select_word):]
@@ -151,24 +164,24 @@ def genarate_word_error(sents):
             ans.append((sent,err_sent))
     return ans
 
-source = pd.read_csv('tot_acc_sent.tsv',sep='\t',encoding = "utf-8")
+source = open('data/segmented_text_v2_test.tsv','r',encoding = "utf-8")
 same_pinyin = get_same_pinyin(data_path+'\same_pinyin.txt')
 same_stroke = get_same_stroke(data_path+'\same_stroke.txt')
 
-for id,text in tqdm(zip(source['id'],source['sentence'])):
-    sentences.append(text)
+for line in source:
+    sentences.append(line.strip())
 
 same_pinyin_error_sents = genarate_pinyin_error(random.sample(sentences,100),same_pinyin)
 same_stroke_error_sents = genarate_stroke_error(random.sample(sentences,100),same_stroke)
 miss_char_error_sents = genarate_miss_error(random.sample(sentences,100))
 change_word_error_sents = genarate_word_error(random.sample(sentences,100))
 
-with open('cor_err_sents_chart.txt','w',encoding='utf-8') as f:
+with open('data/cor_err_sents_chart.txt','w',encoding='utf-8') as f:
     f.write('type:same_pinyin\n')
     for item in same_pinyin_error_sents:
         f.write('{}\t{}\n'.format(item[0],item[1]))
     f.close()
-with open('cor_err_sents_chart.txt','a+',encoding='utf-8') as f:
+with open('data/cor_err_sents_chart.txt','a+',encoding='utf-8') as f:
     f.write('\ntype:same_stroke\n')
     for item in same_stroke_error_sents:
         f.write('{}\t{}\n'.format(item[0],item[1]))

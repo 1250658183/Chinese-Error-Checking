@@ -9,7 +9,7 @@ This is my first attempt in the direction of nlp，it is dedicated to complete a
 
   由于一开始对API的开发思路产生了误解，走了一些弯路。目前基于restful框架尝试了一些简易的API搭建，为了进行更加快速的开发，目前使用的是轻量级Flask框架，目前实现了一版简单的通过POST将句子传输到后端并返回修改意见的小sample，进行实际尝试的暴露出一个问题：我们的模型时间复杂度有点高，句子较长（测试100个字符的句子）时用时已较长（约为30s)，目前正在分析各个模块的用时并进行优化。
 
-  ![https://github.com/1250658183/Chinese-Error-Checking/blob/master/data/images/简易API请求示例.png]()
+  ![](data/images/简易API请求示例.png)
 
 - [ ] 4.8-4.12 继续RESTful API开发完善，同步进行我们模型的性能优化。
 

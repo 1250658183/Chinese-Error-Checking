@@ -5,10 +5,19 @@ This is my first attempt in the direction of nlp，it is dedicated to complete a
 ------
 #### schedule
 
-- 4.6-4.8 周四前基于Django框架搭建出一个简易的API，可能美化不足。同步进行BERT模型的进一步改进实验。
-- 4.8-4.12 周末前探索将API搭建到服务器上的方式，可能在本地库及模型迁移到服务器上遇到困难。同步尝试优化API界面。
-- 4.13-4.19 下周视API框架开发的完成度，可以尝试进行Demo录制、PPT编写等工作。（本周本科学校进行 中期检查）
-- 4.20-4.26 开始探索一些中文拼写纠错或语法纠错的一些TASK及论文。
+- [x] 4.6-4.8 周四前基于Django框架搭建出一个简易的API，可能美化不足。同步进行BERT模型的进一步改进实验。   
+
+  由于一开始对API的开发思路产生了误解，走了一些弯路。目前基于restful框架尝试了一些简易的API搭建，为了进行更加快速的开发，目前使用的是轻量级Flask框架，目前实现了一版简单的通过POST将句子传输到后端并返回修改意见的小sample，进行实际尝试的暴露出一个问题：我们的模型时间复杂度有点高，句子较长（测试100个字符的句子）时用时已较长（约为30s)，目前正在分析各个模块的用时并进行优化。
+
+  ![[https://github.com/1250658183/Chinese-Error-Checking/blob/master/data/images/%E7%AE%80%E6%98%93API%E8%AF%B7%E6%B1%82%E7%A4%BA%E4%BE%8B.png](https://github.com/1250658183/Chinese-Error-Checking/blob/master/data/images/简易API请求示例.png)]()
+
+  
+
+- [ ] 4.8-4.12 继续RESTful API开发完善，同步进行我们模型的性能优化。
+
+- [ ] 4.13-4.19 下周视API框架开发的完成度，尝试进行服务器端代码迁移工作。（本周本科学校进行 中期检查）
+
+- [ ] 4.20-5.1 进行Demo展示界面的开发。
 
 # 解决方案
 

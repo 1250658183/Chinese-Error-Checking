@@ -11,11 +11,42 @@ This is my first attempt in the direction of nlp，it is dedicated to complete a
 
   ![](data/images/简易API请求示例.png)
 
-- [ ] 4.8-4.12 继续RESTful API开发完善，同步进行我们模型的性能优化。
+- [x] 4.8-4.12 继续RESTful API开发完善，~~同步进行我们模型的性能优化~~。
+
+  #### API调用方法展示
+
+  目前搭建到阿里云的API调用url为[101.132.106.101:15432/correct](101.132.106.101:15432/correct)，调用的method为POST，传入‘origin'=’待纠错句子‘ 的参数。
+
+  - ##### Postman工具调用方法展示：
+
+  ![Postman调用方法](data/images/Postman调用方法.png)
+
+  ![Postman返回结果](data/images/Postman返回结果.png)
+
+  - ##### requests调用方法
+
+    ```
+    from requests import post
+    error_sent = '肿瘤娩疫治疗平台有望成为业绩长期增长的新动能。同时，国内一至性评价政策推动，'
+    r = post('http://101.132.106.101:15432/correct',data={'origin':error_sent})
+    print(r.json())
+    
+    >>{'runtime': 1, 'origin': '肿瘤娩疫治疗平台有望成为业绩长期增长的新动能。同时，国内一至性评价政策推动，', 'maybe_errors': [['肿瘤', 0, 2], ['娩', 2, 3], ['疫', 3, 4], ['治', 4, 5], ['一至性', 28, 31]], 'details': [['娩', '免', 2, 3], ['一至性', '一致性', 28, 31]], 'corrected_sent': '肿瘤免疫治疗平台有望成为业绩长期增长的新动能。同时，国内一致性评价政策推动，'}
+    ```
+
+  - ##### curl调用方法
+
+    ```
+    $ curl http://101.132.106.101:15432/correct -d "origin='肿瘤娩疫治疗平台有望成为业绩长期增长的新动能。同时，国内一至性评价政策推动，'" -X POST
+    ```
 
 - [ ] 4.13-4.19 下周视API框架开发的完成度，尝试进行服务器端代码迁移工作。（本周本科学校进行 中期检查）
 
 - [ ] 4.20-5.1 进行Demo展示界面的开发。
+
+  ##### 
+
+  
 
 # 解决方案
 

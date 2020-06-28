@@ -3,162 +3,866 @@
 This is my first attempt in the direction of nlp，it is dedicated to complete a Chinese error detection!
 
 ------
-#### schedule
 
-- [x] 4.6-4.8 周四前基于Django框架搭建出一个简易的API，可能美化不足。同步进行BERT模型的进一步改进实验。   
 
-  由于一开始对API的开发思路产生了误解，走了一些弯路。目前基于restful框架尝试了一些简易的API搭建，为了进行更加快速的开发，目前使用的是轻量级Flask框架，目前实现了一版简单的通过POST将句子传输到后端并返回修改意见的小sample，进行实际尝试的暴露出一个问题：我们的模型时间复杂度有点高，句子较长（测试100个字符的句子）时用时已较长（约为30s)，目前正在分析各个模块的用时并进行优化。
+# 模型复现效果对比
 
-  ![](data/images/简易API请求示例.png)
+##### Soft-Masked BERT 中Baseline复现
 
-- [x] 4.8-4.12 继续RESTful API开发完善，~~同步进行我们模型的性能优化~~。
+原始论文中提出一个500w级别News Title的纠错数据集，经过与原作者联系，他们并不打算公开该数据集。
 
-  #### API调用方法展示
+原始论文中的BERT-Finetune模型是基于500w数据集进行微调，为了对比，我们手动生成了300w级别的语料进行微调。原始论文使用自己提出的数据集作为测试集，复现部分采取Sighan15作为测试集，因此对比也存在差异：
 
-  目前搭建到阿里云的API调用url为[101.132.106.101:15432/correct](101.132.106.101:15432/correct)，调用的method为POST，传入‘origin'=’待纠错句子‘ 的参数。
+<p>
+	<table border="1">
+		<tbody>
+			<tr>
+				<td rowspan="2">
+					<p>
+						Training Data
+					</p>
+				</td>
+				<td rowspan="2">
+					<p>
+						Method
+					</p>
+				</td>
+				<td colspan="4">
+					<p>
+						Detection
+					</p>
+				</td>
+				<td colspan="4">
+					<p>
+						Correction
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<p>
+						Acc.
+					</p>
+				</td>
+				<td>
+					<p>
+						Prec.
+					</p>
+				</td>
+				<td>
+					<p>
+						Rec.
+					</p>
+				</td>
+				<td>
+					<p>
+						F1.
+					</p>
+				</td>
+				<td>
+					<p>
+						Acc.
+					</p>
+				</td>
+				<td>
+					<p>
+						Prec.
+					</p>
+				</td>
+				<td>
+					<p>
+						Rec.
+					</p>
+				</td>
+				<td>
+					<p>
+						F1.
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<p>
+						100w
+					</p>
+				</td>
+				<td>
+					<p>
+						BERT-Finetune
+					</p>
+					<p>
+						(in Soft-Masked)
+					</p>
+				</td>
+				<td>
+					<p>
+						74.2
+					</p>
+				</td>
+				<td>
+					<p>
+						54.7
+					</p>
+				</td>
+				<td>
+					<p>
+						51.3
+					</p>
+				</td>
+				<td>
+					<p>
+						52.9
+					</p>
+				</td>
+				<td>
+					<p>
+						70.0
+					</p>
+				</td>
+				<td>
+					<p>
+						41.6
+					</p>
+				</td>
+				<td>
+					<p>
+						39.0
+					</p>
+				</td>
+				<td>
+					<p>
+						40.3
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<p>
+						100w +
+					</p>
+					<p>
+						Sighan15
+					</p>
+				</td>
+				<td>
+					<p>
+						BERT-Finetune
+					</p>
+					<p>
+						(复现)
+					</p>
+				</td>
+				<td>
+					<p>
+						<br />
+					</p>
+				</td>
+				<td>
+					<p>
+						54.7
+					</p>
+				</td>
+				<td>
+					<p>
+						52.6
+					</p>
+				</td>
+				<td>
+					<p>
+						53.6
+					</p>
+				</td>
+				<td>
+					<p>
+						62.8
+					</p>
+				</td>
+				<td>
+					<p>
+						45.5
+					</p>
+				</td>
+				<td>
+					<p>
+						43.7
+					</p>
+				</td>
+				<td>
+					<p>
+						44.6
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<p>
+						200w
+					</p>
+				</td>
+				<td>
+					<p>
+						BERT-Finetune
+					</p>
+					<p>
+						(in Soft-Masked)
+					</p>
+				</td>
+				<td>
+					<p>
+						77.0
+					</p>
+				</td>
+				<td>
+					<p>
+						59.7
+					</p>
+				</td>
+				<td>
+					<p>
+						57.0
+					</p>
+				</td>
+				<td>
+					<p>
+						58.3
+					</p>
+				</td>
+				<td>
+					<p>
+						73.1
+					</p>
+				</td>
+				<td>
+					<p>
+						48.0
+					</p>
+				</td>
+				<td>
+					<p>
+						45.8
+					</p>
+				</td>
+				<td>
+					<p>
+						46.9
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<p>
+						200w +
+					</p>
+					<p>
+						Sighan15
+					</p>
+				</td>
+				<td>
+					<p>
+						BERT-Finetune
+					</p>
+					<p>
+						(复现)
+					</p>
+				</td>
+				<td>
+					<p>
+						<br />
+					</p>
+				</td>
+				<td>
+					<p>
+						67.9
+					</p>
+				</td>
+				<td>
+					<p>
+						69.6
+					</p>
+				</td>
+				<td>
+					<p>
+						68.7
+					</p>
+				</td>
+				<td>
+					<p>
+						71.7
+					</p>
+				</td>
+				<td>
+					<p>
+						55.2
+					</p>
+				</td>
+				<td>
+					<p>
+						56.7
+					</p>
+				</td>
+				<td>
+					<p>
+						55.9
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<p>
+						500w
+					</p>
+				</td>
+				<td>
+					<p>
+						BERT-Finetune
+					</p>
+					<p>
+						(in Soft-Masked)
+					</p>
+				</td>
+				<td>
+					<p>
+						80.0
+					</p>
+				</td>
+				<td>
+					<p>
+						65.0
+					</p>
+				</td>
+				<td>
+					<p>
+						61.5
+					</p>
+				</td>
+				<td>
+					<p>
+						63.2
+					</p>
+				</td>
+				<td>
+					<p>
+						76.8
+					</p>
+				</td>
+				<td>
+					<p>
+						55.3
+					</p>
+				</td>
+				<td>
+					<p>
+						52.3
+					</p>
+				</td>
+				<td>
+					<p>
+						53.8
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<p>
+						300w +
+					</p>
+					<p>
+						Sighan15
+					</p>
+				</td>
+				<td>
+					<p>
+						BERT-Finetune
+					</p>
+					<p>
+						(复现)
+					</p>
+				</td>
+				<td>
+					<p>
+						<br />
+					</p>
+				</td>
+				<td>
+					<p>
+						65.1
+					</p>
+				</td>
+				<td>
+					<p>
+						69.4
+					</p>
+				</td>
+				<td>
+					<p>
+						67.2
+					</p>
+				</td>
+				<td>
+					<p>
+						71.7
+					</p>
+				</td>
+				<td>
+					<p>
+						56.1
+					</p>
+				</td>
+				<td>
+					<p>
+						59.8
+					</p>
+				</td>
+				<td>
+					<p>
+						57.9
+					</p>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+</p>
 
-  - ##### Postman工具调用方法展示：
 
-  ![Postman调用方法](data/images/Postman调用方法.png)
 
-  ![Postman返回结果](data/images/Postman返回结果.png)
+##### SpellGCN 中Baseline复现
 
-  - ##### requests调用方法
+<p>
+	<table border="1">
+		<tbody>
+			<tr>
+				<td rowspan="2">
+					<p>
+						Training Data
+					</p>
+				</td>
+				<td rowspan="2">
+					<p>
+						Method
+					</p>
+				</td>
+				<td colspan="4">
+					<p>
+						Detection
+					</p>
+				</td>
+				<td colspan="4">
+					<p>
+						Correction
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<p>
+						Acc.
+					</p>
+				</td>
+				<td>
+					<p>
+						Prec.
+					</p>
+				</td>
+				<td>
+					<p>
+						Rec.
+					</p>
+				</td>
+				<td>
+					<p>
+						F1.
+					</p>
+				</td>
+				<td>
+					<p>
+						Acc.
+					</p>
+				</td>
+				<td>
+					<p>
+						Prec.
+					</p>
+				</td>
+				<td>
+					<p>
+						Rec.
+					</p>
+				</td>
+				<td>
+					<p>
+						F1.
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<p>
+						27w +
+					</p>
+					<p>
+						Sighan
+  13-15
+					</p>
+				</td>
+				<td>
+					<p>
+						BERT(SpellGCN)
+					</p>
+				</td>
+				<td>
+					<p>
+						<br />
+					</p>
+				</td>
+				<td>
+					<p>
+						73.7
+					</p>
+				</td>
+				<td>
+					<p>
+						78.2
+					</p>
+				</td>
+				<td>
+					<p>
+						75.9
+					</p>
+				</td>
+				<td>
+					<p>
+						<br />
+					</p>
+				</td>
+				<td>
+					<p>
+						70.9
+					</p>
+				</td>
+				<td>
+					<p>
+						75.2
+					</p>
+				</td>
+				<td>
+					<p>
+						73.0
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<p>
+						27w +
+					</p>
+					<p>
+						Sighan
+  13-15
+					</p>
+				</td>
+				<td>
+					<p>
+						BERT(复现)
+					</p>
+				</td>
+				<td>
+					<p>
+						<br />
+					</p>
+				</td>
+				<td>
+					<p>
+						75.8
+					</p>
+				</td>
+				<td>
+					<p>
+						76.6
+					</p>
+				</td>
+				<td>
+					<p>
+						76.2
+					</p>
+				</td>
+				<td>
+					<p>
+						<br />
+					</p>
+				</td>
+				<td>
+					<p>
+						73.4
+					</p>
+				</td>
+				<td>
+					<p>
+						74.2
+					</p>
+				</td>
+				<td>
+					<p>
+						73.8
+					</p>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+</p>
 
-    ```
-    from requests import post
-    error_sent = '肿瘤娩疫治疗平台有望成为业绩长期增长的新动能。同时，国内一至性评价政策推动，'
-    r = post('http://101.132.106.101:15432/correct',data={'origin':error_sent})
-    print(r.json())
-    
-    >>{'runtime': 1, 'origin': '肿瘤娩疫治疗平台有望成为业绩长期增长的新动能。同时，国内一至性评价政策推动，', 'maybe_errors': [['肿瘤', 0, 2], ['娩', 2, 3], ['疫', 3, 4], ['治', 4, 5], ['一至性', 28, 31]], 'details': [['娩', '免', 2, 3], ['一至性', '一致性', 28, 31]], 'corrected_sent': '肿瘤免疫治疗平台有望成为业绩长期增长的新动能。同时，国内一致性评价政策推动，'}
-    ```
 
-  - ##### curl调用方法
 
-    ```
-    $ curl http://101.132.106.101:15432/correct -d "origin='肿瘤娩疫治疗平台有望成为业绩长期增长的新动能。同时，国内一至性评价政策推动，'" -X POST
-    ```
+##### 多模型复现对比
 
-- [x] 4.13-4.19 本周进行通用领域的性能增强，进行了模块迭代，在较大程度的保留模型在专有领域的纠错能力的同时，利用新训练的增，强语料进行sighan15的数据训练数据集上的测试（测试集上之前没有做，周一进行对比），评估采用《Confusionset-guided Pointer Networks for Chinese Spelling Check》的评估脚本。
+由于复现的Soft-Masked BERT模型计算较慢，因此在对比中使用了27w+Sighan13-15的数据作为训练数据。
 
-  | model                 | Detec_P | Detec_R | Detec_F1 | Corre_P | Corre_R | Corre_F1 |
-  | --------------------- | ------- | ------- | -------- | ------- | ------- | -------- |
-  | Confusionset-guided…… | 0.67    | 0.73    | 0.70     | 0.72    | 0.60    | 0.65     |
-  | Soft-Masked BERT      | 0.73    | 0.73    | 0.73     | 0.67    | 0.66    | 0.66     |
-  | Ours                  | 0.50    | 0.48    | 0.49     | 0.78    | 0.46    | 0.58     |
+目前SpellGCN的复现尝试仍在进行中。
 
-  《Confusionset-guided Pointer Networks for Chinese Spelling Check》复现尚未收敛，目前的一些seq2seq的解码示例如下：
+<p>
+	<table border="1">
+		<tbody>
+			<tr>
+				<td rowspan="2">
+					<p>
+						Training Data
+					</p>
+				</td>
+				<td rowspan="2">
+					<p>
+						Method
+					</p>
+				</td>
+				<td colspan="4">
+					<p>
+						Detection
+					</p>
+				</td>
+				<td colspan="4">
+					<p>
+						Correction
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<p>
+						Acc.
+					</p>
+				</td>
+				<td>
+					<p>
+						Prec.
+					</p>
+				</td>
+				<td>
+					<p>
+						Rec.
+					</p>
+				</td>
+				<td>
+					<p>
+						F1.
+					</p>
+				</td>
+				<td>
+					<p>
+						Acc.
+					</p>
+				</td>
+				<td>
+					<p>
+						Prec.
+					</p>
+				</td>
+				<td>
+					<p>
+						Rec.
+					</p>
+				</td>
+				<td>
+					<p>
+						F1.
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<p>
+						500w +
+					</p>
+					<p>
+						Sighan15
+					</p>
+				</td>
+				<td>
+					<p>
+						Soft-Masked
+  BERT
+					</p>
+				</td>
+				<td>
+					<p>
+						80.9
+					</p>
+				</td>
+				<td>
+					<p>
+						73.8
+					</p>
+				</td>
+				<td>
+					<p>
+						73.2
+					</p>
+				</td>
+				<td>
+					<p>
+						73.5
+					</p>
+				</td>
+				<td>
+					<p>
+						77.4
+					</p>
+				</td>
+				<td>
+					<p>
+						66.7
+					</p>
+				</td>
+				<td>
+					<p>
+						66.2
+					</p>
+				</td>
+				<td>
+					<p>
+						66.4
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<p>
+						27w +
+					</p>
+					<p>
+						Sighan
+  13-15
+					</p>
+				</td>
+				<td>
+					<p>
+						Soft-Masked
+  BERT(微调复现)
+					</p>
+				</td>
+				<td>
+					<p>
+						<br />
+					</p>
+				</td>
+				<td>
+					<p>
+						50.0
+					</p>
+				</td>
+				<td>
+					<p>
+						72.9
+					</p>
+				</td>
+				<td>
+					<p>
+						59.3
+					</p>
+				</td>
+				<td>
+					<p>
+						77.3
+					</p>
+				</td>
+				<td>
+					<p>
+						65.6
+					</p>
+				</td>
+				<td>
+					<p>
+						74.6
+					</p>
+				</td>
+				<td>
+					<p>
+						69.8
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<p>
+						27w +
+					</p>
+					<p>
+						Sighan
+  13-15
+					</p>
+				</td>
+				<td>
+					<p>
+						SpellGCN
+					</p>
+				</td>
+				<td>
+					<p>
+						<br />
+					</p>
+				</td>
+				<td>
+					<p>
+						74.8
+					</p>
+				</td>
+				<td>
+					<p>
+						80.7
+					</p>
+				</td>
+				<td>
+					<p>
+						77.7
+					</p>
+				</td>
+				<td>
+					<p>
+						<br />
+					</p>
+				</td>
+				<td>
+					<p>
+						72.1
+					</p>
+				</td>
+				<td>
+					<p>
+						77.7
+					</p>
+				</td>
+				<td>
+					<p>
+						75.9
+					</p>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+</p>
 
-  ```
-  src:就是说小朋友不认真，还是上课的内容已造过朋友的能力。
-  trg:就是说小朋友不认真，还是上课的内容已超过朋友的能力。
-  cor:就是说小朋友不认真，还是上课的内力已造过朋友的能力力
-  
-  src:但是这个事也完全不是不好，现在学生在学校常吵架、大家。
-  trg:但是这个事也完全不是不好，现在学生在学校常吵架、打架。
-  cor:但是这个事也完全不是不好，现在学在在学校常吵架、大大。
-  ```
 
-  目前实验1w句子对训练了38批次（原始模型需要27w+句子对训练200批次，但复现时发现耗时过长），尚未出现纠错正确的句子，模型应该是尚未收敛。
 
-- [ ] 4.20-5.1 进行Demo展示界面的开发。
 
-  ##### 
 
-  
 
-# 解决方案
-
-- 中文纠错分为两步走，第一步是错误检测，第二步是错误纠正；
-- 错误检测部分先通过中文分词器切词，由于句子中含有错别字，所以切词结果往往会有切分错误的情况，这样从字粒度和词粒度两方面检测错误，整合这两种粒度的疑似错误结果，形成疑似错误位置候选集；
-- 错误纠正部分，是遍历所有的疑似错误位置，并使用音似、形似词典替换错误位置的词，然后通过语言模型计算句子困惑度，对所有候选集结果比较并排序，得到最优纠正词；
-
-# 模型
-- 通用语言模型(使用人民日报2014版熟语料)
-- 领域特定语言模型（医学领域预料）
-
-## 错误检测
-- 字粒度：语言模型困惑度（ppl）检测某字的似然概率值低于句子文本平均值，则判定该字是疑似错别字的概率大。
-- 词粒度：切词后不在词典中的词是疑似错词的概率大(新词发现)。
-
-## 错误纠正
-- 通过错误检测定位所有疑似错误后，取所有疑似错字的音似、形似候选词;
-- 使用候选词替换，基于语言模型得到类似翻译模型的候选排序结果，得到最优纠正词;
-
-# 实验部分
-## 1. Data Process
-
-| 文件             | 含义                                                         |
-| :--------------- | :----------------------------------------------------------- |
-| Extract_PDF.py   | 该文件包含了将PDF抽取出TXT的基本操作，其处理结果为输入一个文件目录，其自动便利此目录下的子目录与.pdf文件，同时将抽取的.txt文件放入到与.pdf同目录下的文件夹中. 抽取模式为利用pdfminer库，实现识别pdf文件中的TEXT信息，并添加启发式规则，合并应该属于同一条语句的TEXT，目前启发式规则仍在不断完善中 |
-| TXT2TSV.py       | 实现将抽取的TXT转化为id \t contence \n 格式的.tsv文件，同样输入文件目录，程序自动递归遍历，输出文件再程序同目录下，其基本处理模式为判断中英文标点作为分隔符，并过滤长度<10的句子 |
-| tot_acc_sent.tsv | 存放数据相关，包括抽取语料，分词后训练集，未分词测试集等     |
-| Model\           | 存放计算出的ngrams模型                                       |
-| result\          | c                                                            |
-
-------
-
-## 2. Language Model
-
-### 2.1 kenlm统计语言模型使用(已完成测试)
-#### 2.1.1 下载
-```bash
-https://github.com/kpu/kenlm
-```
-#### 2.1.2 安装Boost(kenlm需要的依赖)
-```bash
-下载boost_1_67_0.tar.bz2(https://www.boost.org/users/history/version_1_67_0.html)
-tar --bzip2 -xf boost_1_67_0.tar.bz2
-cd boost_1_67/
-./bootstrap.sh --prefix=/usr/local
-sudo ./b2 install --with=all
-sudo apt install libbz2-dev
-sudo apt install liblzma-dev
-```
-#### 2.1.3 编译并安装kenlm
-```bash
-cd kenlm
-mkdir -p build
-cd build
-cmake ..
-make -j 4
-```
-### 2.2 训练领域特定语言模型
-#### 2.2.1 数据准备(分词的文件)
-```bash
-no_id_seg_text.tsv
-```
-#### 2.2.2 训练模型(在build目录下操作)
-```bash
-bin/lmplz -o 3 --verbose_header --text no_id_seg_text.tsv --arpa MyModel/log.arpa
-
--o n:最高采用n-gram语法
--verbose_header:在生成的文件头位置加上统计信息
---text text_file:指定存放预料的txt文件
---arpa:指定输出的arpa文件
-```
-
-![test](test.png)
-
-### 2.3 使用训练的模型纠错
-#### 2.3.1 安装kenlm的python包
-
-```bash
-pip3 install https://github.com/kpu/kenlm/archive/master.zip
-```
-#### 2.3.2 将arpa文件转换为binary文件(在build目录下操作)
-```bash
-bin/build_binary -s MyModel/log.arpa MyModel/log.bin
-```
-
-#### 2.3.3 使用训练的模型预测句子的概率
-```bash
-#encoding:utf8
-import kenlm
-model = kenlm.Model('MyModel/log.bin')
-print(model.score('我 是 中国人 .',bos = True,eos = True))
-```
 
 
 

@@ -4,6 +4,13 @@ This is my first attempt in the direction of nlp，it is dedicated to complete a
 
 ------
 
+##### Postman调研API------Demo
+
+更换了一个延迟更小的IP，新的调用地址为：[34.96.195.206:5000/correct](34.96.195.206:5000/correct)
+
+本次迭代使用对训练好的通用模型进行领域微调，最终sighan保留了0.72的F1，领域保留了0.75的F1.
+
+![](/data/images/Postman调用方法.png)
 
 # 模型复现效果对比
 

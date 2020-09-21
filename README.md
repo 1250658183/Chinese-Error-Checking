@@ -36,10 +36,6 @@ This is my first attempt in the direction of nlp，it is dedicated to complete a
 
 
 
-##### Corrector界面原型设计
-
-![](/data/images/原型页面.png)
-
 ##### PostmanAPI------Demo
 
 更换了一个延迟更小的IP，新的调用地址为：[34.96.195.206:5000/correct](34.96.195.206:5000/correct)
